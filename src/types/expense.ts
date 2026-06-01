@@ -1,8 +1,14 @@
 export interface Expense {
   id: string;
-  payer: 'Madhav' | 'Devika';
   amount: number;
   description: string;
-  otherPersonShare?: number; // Amount the other person owes for this expense
+  paidBy: 'me' | 'her';
   createdAt: Date;
+}
+
+export interface Stats {
+  totalSpentByMe: number;
+  totalSpentByHer: number;
+  combinedTotal: number;
+  balanceScore: number;
 }

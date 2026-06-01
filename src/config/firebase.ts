@@ -2,12 +2,12 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB0OriPkmhEtxnMIZBVF5-h-HcZjf2wev8",
-  authDomain: "who-owes-who-6eb28.firebaseapp.com",
-  projectId: "who-owes-who-6eb28",
-  storageBucket: "who-owes-who-6eb28.firebasestorage.app",
-  messagingSenderId: "392955532450",
-  appId: "1:392955532450:web:56809150d897da6fa3b3fb"
+  apiKey: "AIzaSyBXcvGIFyxcoayZ2UicOr08faCB4fTeLuA",
+  authDomain: "whosetreat-bc6eb.firebaseapp.com",
+  projectId: "whosetreat-bc6eb",
+  storageBucket: "whosetreat-bc6eb.firebasestorage.app",
+  messagingSenderId: "178391216090",
+  appId: "1:178391216090:web:bde9050fb52774c576dae3"
 };
 
 const app = initializeApp(firebaseConfig);

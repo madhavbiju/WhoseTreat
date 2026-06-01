@@ -1,59 +1,34 @@
-import { collection, addDoc, getDocs, query, orderBy, where, Timestamp, doc, updateDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, Timestamp, doc, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { Expense } from '../types/expense';
 
-export const addExpense = async (expense: Omit<Expense, 'id' | 'createdAt'>) => {
-  await addDoc(collection(db, 'expenses'), {
-    ...expense,
+const COLLECTION_NAME = 'shared_expenses';
+
+export const addExpense = async (expense: Omit<Expense, 'id' | 'createdAt'>): Promise<void> => {
+  await addDoc(collection(db, COLLECTION_NAME), {
+    amount: expense.amount,
+    description: expense.description,
+    paidBy: expense.paidBy,
     createdAt: Timestamp.now()
   });
 };
 
 export const getExpenses = async (): Promise<Expense[]> => {
-  const q = query(collection(db, 'expenses'), orderBy('createdAt', 'desc'));
+  const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    createdAt: doc.data().createdAt.toDate()
-  })) as Expense[];
-};
-
-export const getMonthlyExpenses = async (): Promise<Expense[]> => {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const q = query(
-    collection(db, 'expenses'),
-    where('createdAt', '>=', Timestamp.fromDate(startOfMonth)),
-    orderBy('createdAt', 'desc')
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    createdAt: doc.data().createdAt.toDate()
-  })) as Expense[];
-};
-
-export const updateExpense = async (id: string, expense: Partial<Omit<Expense, 'id' | 'createdAt'>>) => {
-  const docRef = doc(db, 'expenses', id);
-  await updateDoc(docRef, expense);
-};
-
-export const getExpenseById = async (id: string): Promise<Expense | null> => {
-  const docRef = doc(db, 'expenses', id);
-  const snapshot = await getDoc(docRef);
-  if (snapshot.exists()) {
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
     return {
-      id: snapshot.id,
-      ...snapshot.data(),
-      createdAt: snapshot.data().createdAt.toDate()
-    } as Expense;
-  }
-  return null;
+      id: doc.id,
+      amount: Number(data.amount) || 0,
+      description: data.description || '',
+      paidBy: data.paidBy as 'me' | 'her',
+      createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date()
+    };
+  });
 };
 
-export const deleteExpense = async (id: string) => {
-  const docRef = doc(db, 'expenses', id);
+export const deleteExpense = async (id: string): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, id);
   await deleteDoc(docRef);
 };
