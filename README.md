@@ -21,6 +21,7 @@ Instead of tracking rigid 50/50 split debts, **WhoseTreat?** embraces an **alter
   - **She Spent More**: Sky-blue pastel gradient (*"His turn to treat! ☕ She spent ₹X more overall."*).
 - **5-Second Quick-Log Form**: Centered numeric amount input (auto-focused on load), optional descriptions, and large interactive toggle controls (`[Him]` / `[Her]`).
 - **Interactive Monthly Feed**: Clean, scrollable lists representing transactions for the current calendar month, complete with custom payer badges and a delete button for accidental logs.
+- **Progressive Web App (PWA)**: Full install support on mobile home screens (iOS Safari, Android Chrome) and desktop clients, complete with standalone launch headers and offline shell asset caching (`service-worker.js`).
 
 ---
 
