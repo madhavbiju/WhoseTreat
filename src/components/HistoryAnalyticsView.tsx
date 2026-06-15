@@ -1,23 +1,26 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useExpenses } from '../context/ExpenseContext';
-import { Trash2, Heart, Inbox } from 'lucide-react';
+import { Trash2, Inbox } from 'lucide-react';
 import { Expense } from '../types/expense';
 
 const HistoryAnalyticsView: React.FC = () => {
   const { expenses, removeExpense } = useExpenses();
+  const [showAll, setShowAll] = useState<boolean>(false);
 
   // Dynamic current month formatting for card labels
-  const monthName = React.useMemo(() => {
+  const monthName = useMemo(() => {
     return new Date().toLocaleDateString('en-IN', { month: 'long' });
   }, []);
 
-  // Filter stats and feed strictly to the current calendar month
-  const monthlyData = React.useMemo(() => {
+  const startOfCurrentMonth = useMemo(() => {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }, []);
+
+  // Filter stats and feed strictly to the current calendar month
+  const monthlyData = useMemo(() => {
     // Sort transactions within this calendar month
-    const monthlyExpenses = expenses.filter(e => e.createdAt >= startOfMonth);
+    const monthlyExpenses = expenses.filter(e => e.createdAt >= startOfCurrentMonth);
     
     const totalSpentByMe = monthlyExpenses
       .filter(e => e.paidBy === 'me')
@@ -33,7 +36,18 @@ const HistoryAnalyticsView: React.FC = () => {
       totalSpentByHer,
       combinedTotal: totalSpentByMe + totalSpentByHer
     };
-  }, [expenses]);
+  }, [expenses, startOfCurrentMonth]);
+
+  // Determine if there are transactions older than the current month
+  const hasOlder = useMemo(() => {
+    return expenses.some(e => e.createdAt < startOfCurrentMonth);
+  }, [expenses, startOfCurrentMonth]);
+
+  // Calculate what is currently displayed in the list
+  const displayedExpenses = useMemo(() => {
+    if (showAll) return expenses;
+    return monthlyData.monthlyExpenses;
+  }, [expenses, showAll, monthlyData.monthlyExpenses]);
 
   const handleDelete = async (expense: Expense) => {
     const formattedAmount = new Intl.NumberFormat('en-IN', {
@@ -100,24 +114,32 @@ const HistoryAnalyticsView: React.FC = () => {
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex items-center justify-between mb-3.5 px-1 select-none">
           <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
-            {monthName} History
+            {showAll ? 'All History' : `${monthName} History`}
           </h3>
           <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-            {monthlyData.monthlyExpenses.length} {monthlyData.monthlyExpenses.length === 1 ? 'entry' : 'entries'}
+            {displayedExpenses.length} {displayedExpenses.length === 1 ? 'entry' : 'entries'}
           </span>
         </div>
 
-        {monthlyData.monthlyExpenses.length === 0 ? (
+        {displayedExpenses.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50/50 dark:bg-[#222530]/20 rounded-2xl border border-slate-100 dark:border-[#2C303D]/50 border-dashed transition-colors duration-300 select-none">
             <Inbox className="w-10 h-10 text-slate-300 dark:text-slate-600 stroke-1.5 mb-3" />
             <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">No treats logged in {monthName}!</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 max-w-[180px] leading-relaxed">
+            <p className="text-xs text-slate-400 dark:text-slate-500 max-w-[180px] leading-relaxed mb-4">
               Log your first treat for this month on the dashboard!
             </p>
+            {hasOlder && (
+              <button
+                onClick={() => setShowAll(true)}
+                className="text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 py-2 px-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 dark:bg-[#222530] dark:border-[#2C303D] transition-all duration-200 cursor-pointer shadow-xs"
+              >
+                Show older transactions
+              </button>
+            )}
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-3 min-h-0">
-            {monthlyData.monthlyExpenses.map((expense) => {
+          <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-3 min-h-0 pb-4">
+            {displayedExpenses.map((expense) => {
               const isMe = expense.paidBy === 'me';
               return (
                 <div 
@@ -165,6 +187,29 @@ const HistoryAnalyticsView: React.FC = () => {
                 </div>
               );
             })}
+
+            {/* Toggle Button at the bottom of the list */}
+            {showAll ? (
+              <div className="pt-2 text-center">
+                <button
+                  onClick={() => setShowAll(false)}
+                  className="text-xs font-bold text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 py-2.5 px-4 rounded-xl bg-slate-100/50 hover:bg-slate-100 dark:bg-[#1A1C23]/40 dark:hover:bg-[#1A1C23]/80 border border-transparent dark:border-[#2C303D]/30 transition-all duration-200 cursor-pointer"
+                >
+                  Show current month only
+                </button>
+              </div>
+            ) : (
+              hasOlder && (
+                <div className="pt-2 text-center">
+                  <button
+                    onClick={() => setShowAll(true)}
+                    className="text-xs font-bold text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 py-2.5 px-4 rounded-xl bg-slate-100/50 hover:bg-slate-100 dark:bg-[#1A1C23]/40 dark:hover:bg-[#1A1C23]/80 border border-transparent dark:border-[#2C303D]/30 transition-all duration-200 cursor-pointer"
+                  >
+                    Show older transactions
+                  </button>
+                </div>
+              )
+            )}
           </div>
         )}
       </div>

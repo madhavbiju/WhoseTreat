@@ -24,7 +24,7 @@ function App() {
     <ExpenseProvider>
       <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-0 sm:p-4 transition-colors duration-300">
         {/* Mobile mock container */}
-        <div className={`w-full max-w-md min-h-screen sm:min-h-[820px] sm:max-h-[820px] flex flex-col relative overflow-hidden pb-28 border transition-all duration-300 sm:rounded-3xl shadow-2xl ${
+        <div className={`w-full max-w-md h-[100dvh] sm:h-[820px] flex flex-col relative overflow-hidden pb-28 border transition-all duration-300 sm:rounded-3xl shadow-2xl ${
           isDarkMode 
             ? 'bg-[#1A1C23] text-slate-100 border-[#2C303D] shadow-slate-950/50' 
             : 'bg-slate-50 text-slate-800 border-slate-100'
